@@ -6,9 +6,11 @@ from typing import Dict, Any
 import io
 import ast
 import contextlib
+import logging
 
 
 app = FastAPI()
+
 
 # session_id -> namespace (shared global/local dict for that tab)
 _sessions: Dict[str, Dict[str, Any]] = {}
@@ -89,8 +91,8 @@ def execute_code(session_id: str, code: str) -> ExecResponse:
                     # last node is an expression evaluate and return repr
                     expr_code = compile(ast.Expression(last.value), filename="<cell>", mode="eval")
                     value = eval(expr_code, ns, ns)
-                    # Only show/store a result if the expression actually returned a value
-                    # (e.g., x+1, calc(5,5), "hi"). Calls like print(...) return None.
+
+                    # only show/store result if the expression actually returns a value eg. print() returns None
                     if value is not None:
                         ns["_"] = value  # convenience like the Python REPL
                         result_str = repr(value)

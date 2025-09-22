@@ -4,8 +4,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: #eae6f9;
+  background-color: #100e16ff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -32,14 +32,33 @@ body {
   min-height: 100vh;
 }
 
+
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
 
+textarea {
+  resize: vertical;
+  height: 20vh;
+  background: #201c2f;
+  border-radius: 6px;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+
+.cells{
+  width: 60vw;
+}
 
 .cell{
-  width: 60vw;
+  background: #1e1b29;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
 }
 
 .btn {
@@ -47,7 +66,7 @@ h1 {
   appearance: none;
   -webkit-appearance: none;
   border: 1px solid #3a3a3a;
-  background: #1a1a1a;
+  background: #2e2a3d;
   color: #eaeaea;
 
   display: inline-flex;
@@ -62,9 +81,26 @@ h1 {
   font: inherit;
 }
 
-.btn:hover { background: #232323; }
+
+.btn:hover { background: #0e022ece; }
 .btn:active { background: #1a1a1a; }
 .btn:focus-visible { outline: 2px solid #6aa0ff; outline-offset: 2px; }
+
+.run {
+  background: #6c4aff !important;
+}
+
+.run:hover {
+  background: #856bff !important;
+}
+
+.delete {
+  background: #ff3b5c!important;
+}
+
+.delete:hover {
+  background: #ff5c7a !important;
+}
 
 @media (prefers-color-scheme: light) {
   :root {

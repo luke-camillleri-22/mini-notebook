@@ -14,8 +14,7 @@ import { runCode, resetSession } from "./api";
 import type { Cell } from "./types";
 
 /**
- * Small wrapper to add a left line-number gutter to react-simple-code-editor.
- * (react-simple-code-editor doesn't ship line numbers out-of-the-box.)
+ * wrapper to add a left line-number to react-simple-code-editor.
  */
 function CodeEditor({
   value,
@@ -34,10 +33,10 @@ function CodeEditor({
         style={{
           margin: 0,
           padding: "10px 8px",
-          width: 36,
+          width: 24,
           textAlign: "right",
           userSelect: "none",
-          background: "#161616",
+          background: "#100e16ff",
           color: "#8a8a8a",
           border: "1px solid #3a3a3a",
           borderRight: "none",
@@ -52,7 +51,7 @@ function CodeEditor({
         {Array.from({ length: lineCount }, (_, i) => String(i + 1)).join("\n")}
       </pre>
 
-      {/* The editor itself */}
+      {/* code editor */}
       <Editor
         value={value}
         onValueChange={onChange}
@@ -62,14 +61,14 @@ function CodeEditor({
           border: "1px solid #3a3a3a",
           borderLeft: "none",
           borderRadius: "0 6px 6px 0",
-          background: "#1e1e1e",
+          background: "#181622",
           color: "#eee",
           fontFamily:
             '"Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace',
           fontSize: 14,
           lineHeight: 1.4,
           width: "100%",
-          minHeight: 160, // roughly your previous 8 rows
+          minHeight: 200, // roughly your previous 8 rows
         }}
       />
     </div>
@@ -77,10 +76,10 @@ function CodeEditor({
 }
 
 /**
- * Main App component - A Jupyter-like notebook interface with support for:
- * - Code cells (Python execution)
- * - Markdown cells (with preview/edit modes)
- * - Session-based execution state per browser tab
+ * Main App - jupyter-like notebook interface with support for:
+ * - code cells for python execution with simple output display
+ * - markdown cells (with preview/edit modes)
+ * - session-based execution state per browser tab or window
  */
 export default function App() {
   // unique session ID for this tab/window (useMemo to persist across re-renders)
@@ -99,7 +98,10 @@ export default function App() {
   const togglePreview = (id: string) =>
     setMdPreview((prev) => ({ ...prev, [id]: !prev[id] })); // toggle between edit/preview
 
-  /** Add a new cell of the specified type (code or markdown) to the end of the notebook */
+  // running-all flag to disable the button while executing
+  const [isRunningAll, setIsRunningAll] = useState(false);
+
+  /** add new cell of specified type (code or markdown) to the end of the notebook */
   function addCell(type: Cell["type"]) {
     setCells((prev) => [...prev, { id: uuidv4(), type, source: "" }]);
   }
@@ -115,20 +117,20 @@ export default function App() {
     });
   }
 
-  /** Update the source content of a specific cell */
+  /** update the source content of a specific cell */
   function updateSource(id: string, source: string) {
     setCells((prev) => prev.map((c) => (c.id === id ? { ...c, source } : c)));
   }
 
-  /** Remove a cell from the notebook by its ID */
+  /** remove a cell from the notebook by its ID */
   function deleteCell(id: string) {
     setCells((prev) => prev.filter((c) => c.id !== id));
   }
 
-  /** Execute a code cell by sending it to the Python backend */
+  /** execute code cell by sending it to python backend */
   async function execute(id: string) {
     const cell = cells.find((c) => c.id === id);
-    if (!cell) return; // Guard: cell not found
+    if (!cell) return; // guard
 
     try {
       const resp = await runCode(sessionId, cell.source);
@@ -149,11 +151,33 @@ export default function App() {
     }
   }
 
+
+  async function runAllCells() {
+    if (isRunningAll) return;
+    setIsRunningAll(true);
+    try {
+      // snapshot the current order so edits during run don’t change execution order
+      const snapshot = [...cells];
+
+      // auto-render all markdown cells:
+      setMdPreview(prev => ({ ...prev, ...Object.fromEntries(snapshot.filter(c=>c.type==='markdown').map(c=>[c.id, true])) }));
+
+      // run code cells sequentially to preserve state 
+      for (const cell of snapshot) {
+        if (cell.type !== "code") continue;
+
+        await execute(cell.id);
+      }
+    } finally {
+      setIsRunningAll(false);
+    }
+  }
+
   return (
-    <div className="cell" style={{ maxWidth: 1000, margin: "0 auto", padding: 16 }}>
+    <div className="cells" style={{ maxWidth: 1000, margin: "0 auto", padding: 16 }}>
       <h1>Jupyter Notebook Mini</h1>
 
-      {/* Control buttons for adding new cells and resetting kernel */}
+      {/* buttons for adding new cells and resetting kernel */}
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <button className="btn" onClick={() => addCell("markdown")}>
           + Markdown
@@ -174,15 +198,23 @@ export default function App() {
         >
           Restart Kernel
         </button>
+        <button
+          className="btn run"
+          onClick={runAllCells}
+          disabled={isRunningAll}
+          title="Run all code cells from top to bottom"
+        >
+          {isRunningAll ? "Running…" : "Run All ▶▶"}
+        </button>
       </div>
 
-      {/* Render all cells in order */}
+      {/* render all cells in order */}
       {cells.map((cell) => (
         <div
           key={cell.id}
-          style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12, marginBottom: 12 }}
+          className="cell"
         >
-          {/* Cell header with type label and delete button */}
+          {/* cell header with type label and delete button */}
           <div
             style={{
               marginBottom: 8,
@@ -193,14 +225,14 @@ export default function App() {
             }}
           >
             <span>{cell.type.toUpperCase()}</span>
-            <button className="btn" onClick={() => deleteCell(cell.id)} style={{ color: "red" }}>
+            <button className="btn delete" onClick={() => deleteCell(cell.id)} style={{ color: "white" }}>
               Delete Cell ✕
             </button>
           </div>
 
           {/* === EDITOR AREA ===
-              Markdown cells keep the original <textarea> (hidden when previewing).
-              Code cells render the new CodeEditor with line numbers + highlighting. */}
+              markdown cells keep the original <textarea> (hidden when rendering).
+              code cells render the new CodeEditor with line numbers + highlighting. */}
           {cell.type === "markdown" ? (
             <textarea
               value={cell.source}
@@ -210,7 +242,7 @@ export default function App() {
                 width: "100%",
                 fontFamily:
                   'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                display: isPreview(cell.id) ? "none" : "block", // Hide textarea when previewing markdown
+                display: isPreview(cell.id) ? "none" : "block", // hide textarea when rendering markdown
               }}
               placeholder="Write Markdown here…"
             />
@@ -218,7 +250,7 @@ export default function App() {
             <CodeEditor value={cell.source} onChange={(code) => updateSource(cell.id, code)} />
           )}
 
-          {/* Markdown-specific controls and preview */}
+          {/* markdown-specific controls and preview */}
           <div style={{ marginTop: 8 }}>
             {cell.type === "markdown" && (
               <>
@@ -228,7 +260,7 @@ export default function App() {
                     <div
                       style={{
                         padding: 8,
-                        background: "#242424",
+                        background: "#181622",
                         color: "#eee",
                         borderRadius: 6,
                         minHeight: 40,
@@ -237,7 +269,7 @@ export default function App() {
                       <ReactMarkdown>{cell.source || "*Nothing to display*"}</ReactMarkdown>
                     </div>
                     <div style={{ marginTop: 8 }}>
-                      <button className="btn" onClick={() => togglePreview(cell.id)}>
+                      <button className="btn run" onClick={() => togglePreview(cell.id)}>
                         Edit Markdown
                       </button>
                       <button
@@ -257,9 +289,9 @@ export default function App() {
                     </div>
                   </>
                 ) : (
-                  // Edit mode: show render button
+                  // edit mode -> show render button
                   <div style={{ marginTop: 8 }}>
-                    <button className="btn" onClick={() => togglePreview(cell.id)}>
+                    <button className="btn run" onClick={() => togglePreview(cell.id)}>
                       Render Markdown ▶
                     </button>
                     <button
@@ -282,10 +314,10 @@ export default function App() {
             )}
           </div>
 
-          {/* Code cell controls and output */}
+          {/* code cell controls and output */}
           {cell.type === "code" && (
             <>
-              <button className="btn" onClick={() => execute(cell.id)}>
+              <button className="btn run" onClick={() => execute(cell.id)}>
                 Run ▶
               </button>
               <button
@@ -303,7 +335,7 @@ export default function App() {
                 + Add Markdown Cell Below
               </button>
 
-              {/* Display execution output or errors */}
+              {/* display execution output or errors */}
               {cell.output || cell.error ? (
                 <pre
                   style={{
@@ -323,9 +355,9 @@ export default function App() {
         </div>
       ))}
 
-      {/* Footer with session info */}
+      {/* footer */}
       <p style={{ color: "#666", fontSize: 12 }}>
-        Each tab/window has its own Python state. Refresh to clear variables.
+        Each tab/window has its own Python state. To clear variables, use the Reset Kernel button or open a fresh tab/window.
       </p>
     </div>
   );

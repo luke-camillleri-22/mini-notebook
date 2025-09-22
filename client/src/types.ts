@@ -12,5 +12,5 @@ export interface ExecResponse {
   stdout: string;
   result: string | null;
   error: string | null;
-  exec_count: number; // use your backend’s field name
+  exec_count: number;
 }

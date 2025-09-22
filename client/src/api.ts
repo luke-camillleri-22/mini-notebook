@@ -4,9 +4,9 @@ import type { ExecResponse } from "./types";
 const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 /**
- * Execute Python code in a specific session
+ * Execute Python code for a specific session
  * 
- * Sends Python code to the backend for execution in an isolated session environment.
+ * Sends Python code to the backend for execution in an isolated session environment
  * Each session maintains its own variable namespace and execution state.
  * 
  */
