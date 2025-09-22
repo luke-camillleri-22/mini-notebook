@@ -4,3 +4,38 @@
 # Ignore Python cache folders anywhere
 **/__pycache__/
 *.pyc
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# IDE/editor settings
+.vscode/
+.idea/
+
+# ---- Node/React ----
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---- OS-specific ----
+# macOS
+.DS_Store
+# Windows
+Thumbs.db
