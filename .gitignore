@@ -1,0 +1,6 @@
+# Ignore virtual environment inside server
+/server/.venv/
+
+# Ignore Python cache folders anywhere
+**/__pycache__/
+*.pyc
