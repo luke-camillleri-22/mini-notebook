@@ -89,9 +89,13 @@ def execute_code(session_id: str, code: str) -> ExecResponse:
                     # last node is an expression evaluate and return repr
                     expr_code = compile(ast.Expression(last.value), filename="<cell>", mode="eval")
                     value = eval(expr_code, ns, ns)
-                    ns["_"] = value  # store in _ for convenience
-                    result_str = repr(value)
-
+                    # Only show/store a result if the expression actually returned a value
+                    # (e.g., x+1, calc(5,5), "hi"). Calls like print(...) return None.
+                    if value is not None:
+                        ns["_"] = value  # convenience like the Python REPL
+                        result_str = repr(value)
+                    else:
+                        result_str = None
                 else:
                     # if last node is not an expression execute it normally
                     exec(compile(ast.Module(body=[last], type_ignores= []), filename="<cell>", mode="exec"), ns, ns)
