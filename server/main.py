@@ -23,12 +23,17 @@ class ExecRequest(BaseModel):
     code: str
 
 class ExecResponse(BaseModel):
-    """Execition response to frontend - including captured stdout, final line ouptuts and errors (if present)"""
+    """Execution response to frontend - including captured stdout, final line ouptuts and errors (if present)"""
 
     stdout: str
     result: str | None
     error: str | None
     exec_count: int
+
+class ResetRequest(BaseModel):
+    """Request to reset a session's state"""
+
+    session_id: str
 
 
 def _get_namespace(session_id: str) -> Dict[str, Any]:
@@ -110,6 +115,11 @@ def execute_code(session_id: str, code: str) -> ExecResponse:
             exec_count=_exec_counts.get(session_id, 0) # no bump in exec count on error
         )
  
+def reset_session(session_id: str) -> None:
+    """Drop the namespace and exec counter for the session, effectively resetting the kernel of the notebook"""
+    _sessions.pop(session_id, None)
+    _exec_counts.pop(session_id, None)
+
 
 @app.get("/api/ping")
 def ping():
@@ -130,3 +140,9 @@ app.add_middleware(
 def api_execute(req: ExecRequest) -> ExecResponse:
     """HTTP endpoint to execute code for a given session_id"""
     return execute_code(session_id=req.session_id, code=req.code)
+
+@app.post("/api/reset")
+def api_reset(req: ResetRequest) -> Dict[str, str]:
+    """HTTP endpoint to reset a session's kernel/state"""
+    reset_session(session_id=req.session_id)
+    return {"status": "reset kernel"}
