@@ -39,6 +39,17 @@ export default function App() {
     setCells(prev => [...prev, { id: uuidv4(), type, source: "" }]);
   }
 
+  function addCellBelow(id: string, type: Cell["type"]) {
+    setCells(prev => {
+      const index = prev.findIndex(c => c.id === id);
+      if (index === -1) return prev; // Guard: cell not found
+      const newCell = { id: uuidv4(), type, source: "" };
+      const newCells = [...prev];
+      newCells.splice(index + 1, 0, newCell); // Insert new cell after the specified cell
+      return newCells;
+    });
+  }
+
   /**
    * Update the source content of a specific cell
    */
@@ -146,12 +157,16 @@ export default function App() {
                   </div>
                   <div style={{ marginTop: 8 }}>
                     <button className="btn" onClick={() => togglePreview(cell.id)}>Edit Markdown</button>
+                    <button className="btn" style={{ marginLeft: 8}} onClick={() => addCellBelow(cell.id, "code")}>+ Add Code Cell Below</button>
+                    <button className="btn" style={{ marginLeft: 8}} onClick={() => addCellBelow(cell.id, "markdown")}>+ Add Markdown Cell Below</button>
                   </div>
                 </>
               ) : (
                 // Edit mode: show render button
                 <div style={{ marginTop: 8 }}>
                   <button className="btn" onClick={() => togglePreview(cell.id)}>Render Markdown ▶</button>
+                  <button className="btn" style={{ marginLeft: 8}} onClick={() => addCellBelow(cell.id, "code")}>+ Add Code Cell Below</button>
+                  <button className="btn" style={{ marginLeft: 8}} onClick={() => addCellBelow(cell.id, "markdown")}>+ Add Markdown Cell Below</button>
                 </div>
               )}
             </>
@@ -162,13 +177,18 @@ export default function App() {
           {cell.type === "code" && (
             <>
               <button className="btn" onClick={() => execute(cell.id)}>Run ▶</button>
+              <button className="btn" style={{ marginLeft: 8}} onClick={() => addCellBelow(cell.id, "code")}>+ Add Code Cell Below</button>
+              <button className="btn" style={{ marginLeft: 8}} onClick={() => addCellBelow(cell.id, "markdown")}>+ Add Markdown Cell Below</button>
               {/* Display execution output or errors */}
               {cell.output || cell.error ? (
                 <pre>{cell.error ? `Error: ${cell.error}` : cell.output}</pre>
               ) : null}
             </>
           )}
-        </div>
+          {/* Buttons to add new cells below the current one */}
+          
+          
+          </div>
       ))}
 
       {/* Footer with session info */}
