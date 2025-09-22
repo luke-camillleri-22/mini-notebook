@@ -8,6 +8,10 @@ import Prism from "prismjs";
 import "prismjs/components/prism-python"; // python syntax
 import "prismjs/themes/prism-tomorrow.css";        // you can switch to prism-tomorrow.css for dark
 
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css"; // KaTeX CSS for math rendering
+
 // modules for session management and api communication
 import { getTabSessionId } from "./session";
 import { runCode, resetSession } from "./api";
@@ -266,7 +270,14 @@ export default function App() {
                         minHeight: 40,
                       }}
                     >
-                      <ReactMarkdown>{cell.source || "*Nothing to display*"}</ReactMarkdown>
+                      
+                      <ReactMarkdown
+                       remarkPlugins={[remarkMath]}
+                       rehypePlugins={[rehypeKatex]}
+                       >
+                        {cell.source || "*Nothing to display*"}
+                        </ReactMarkdown>
+
                     </div>
                     <div style={{ marginTop: 8 }}>
                       <button className="btn run" onClick={() => togglePreview(cell.id)}>

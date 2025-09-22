@@ -10,11 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "katex": "^0.16.22",
     "prismjs": "^1.30.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-markdown": "^10.1.0",
     "react-simple-code-editor": "^0.14.1",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
