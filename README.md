@@ -1,5 +1,5 @@
-
-# Omniscope – Mini Notebook
+a
+# Mini Notebook
 ## Luke Camilleri
 
 A lightweight, local “mini-Jupyter” notebook: write **Markdown** and **Python** code cells in the browser, execute them against a Python kernel per-tab, and see outputs inline.
@@ -32,7 +32,7 @@ A lightweight, local “mini-Jupyter” notebook: write **Markdown** and **Pytho
 ## Project Structure
 
 ```
-omniscope-technical-test/
+-technical-test/
 ├─ client/
 │  ├─ src/
 │  │  ├─ App.tsx
